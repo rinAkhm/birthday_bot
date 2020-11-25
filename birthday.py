@@ -1,43 +1,61 @@
 import asyncio
 import os
 from telethon import TelegramClient, events
+from telethon import utils
+from dotenv import load_dotenv
+ 
+load_dotenv()
+API_ID = os.getenv('API_ID')
+API_HASH = os.getenv('API_HASH')
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
+
+# @bot.on(events.NewMessage(pattern='/start'))
+# async def start(event):
+#     """Send a message when the command /start is issued."""
+#     await event.respond('Right now the reminder is set to 8:00 pm')
+#     raise events.StopPropagation
+ 
+# @bot.on(events.NewMessage(pattern="Yup"))
+# @bot.on(events.NewMessage(pattern="/doit"))
+# async def reflect(event):
+
+#     async with bot.conversation(event.chat_id) as conv:
+#         await conv.send_message('Lesson of the day?')
+#         q_1 = (await conv.get_response()).raw_text
+
+#         await conv.send_message('One thing I want to change?')
+#         q_2 = (await conv.get_response()).raw_text
+        
+#         await conv.send_message('Am I getting closer to my goals?')
+#         q_3 = (await conv.get_response()).raw_text
+
+#         await conv.send_message('Well done!')
+#         await conv.send_message(f'Quote of the day: \n {quotes.get_quote()}')
+
+#         to_gg_sheets.append_record([q_1,q_2,q_3])
 
 
-
-api_id = int(os.getenv('API_ID'))
-api_hash = os.getenv('API_HASH')
-bot_token = os.getenv('BOT_TOKEN')
-
-
-
-bot = TelegramClient('session', api_id, api_hash).start(bot_token = bot_token)
-
+# @bot.on(events.NewMessage())
+# async def send_welcome(event):
+    # me = bot.get_entity('me')
+    # print(utils.get_display_name(me))
 @bot.on(events.NewMessage(pattern='/start'))
 async def send_welcome(event):
-    #me = bot.get_entity('me')
-    # print(utils.get_display_name(me))
-    await event.reply('Howdy, how are you doing?')
-    with bot.conversation(event) as conv:
-        conv.send_message('Hi!')
-        hello = conv.get_response()
+    me = event.chat_id
+    async with bot.conversation(event.chat_id) as conv:
+        await conv.send_message('Hi!')
+        hello = await (conv.get_response())
 
-        conv.send_message('Please tell me your name')
-        name = conv.get_response().raw_text
+        await conv.send_message('Please tell me your name ')
+        name = (await conv.get_response()).raw_text
+        
         while not any(x.isalpha() for x in name):
-            conv.send_message("Your name didn't have any letters! Try again")
-            name = conv.get_response().raw_text
-
-    conv.send_message('Thanks {}!'.format(name))
-
-
-
-# @bot.on(events.NewMessage)
-# async def all(event):
-#     try:
-#         print(event.message)
-#     except Exception as e:
-
-
+            await conv.send_message("Your name didn't have any letters! Try again")
+            name = (await conv.get_response()).raw_text
+        await conv.send_message(f'Thanks, {name}!')
+        # await conv.send_message('Thanks {}!'.format(name))
 
 def main():
     """Start the bot."""
