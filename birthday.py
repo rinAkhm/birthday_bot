@@ -11,51 +11,40 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
-# @bot.on(events.NewMessage(pattern='/start'))
-# async def start(event):
-#     """Send a message when the command /start is issued."""
-#     await event.respond('Right now the reminder is set to 8:00 pm')
-#     raise events.StopPropagation
- 
-# @bot.on(events.NewMessage(pattern="Yup"))
-# @bot.on(events.NewMessage(pattern="/doit"))
-# async def reflect(event):
-
-#     async with bot.conversation(event.chat_id) as conv:
-#         await conv.send_message('Lesson of the day?')
-#         q_1 = (await conv.get_response()).raw_text
-
-#         await conv.send_message('One thing I want to change?')
-#         q_2 = (await conv.get_response()).raw_text
-        
-#         await conv.send_message('Am I getting closer to my goals?')
-#         q_3 = (await conv.get_response()).raw_text
-
-#         await conv.send_message('Well done!')
-#         await conv.send_message(f'Quote of the day: \n {quotes.get_quote()}')
-
-#         to_gg_sheets.append_record([q_1,q_2,q_3])
-
-
-# @bot.on(events.NewMessage())
-# async def send_welcome(event):
-    # me = bot.get_entity('me')
-    # print(utils.get_display_name(me))
 @bot.on(events.NewMessage(pattern='/start'))
-async def send_welcome(event):
-    me = event.chat_id
-    async with bot.conversation(event.chat_id) as conv:
-        await conv.send_message('Hi!')
-        hello = await (conv.get_response())
+async def send_welcome(message):
+    user = message.chat.first_name
+    me = (await bot.get_me()).username
+    await message.reply(f'Привет, {user}! \nЯ {me} бот могу хранить информацию о дня рождениях твоих знакомых.') 
+    raise events.StopPropagation
 
-        await conv.send_message('Please tell me your name ')
-        name = (await conv.get_response()).raw_text
+
+@bot.on(events.NewMessage(pattern='/add'))
+async def registred_data(event):
+    async with bot.conversation(event.chat_id) as conv:
         
-        while not any(x.isalpha() for x in name):
-            await conv.send_message("Your name didn't have any letters! Try again")
-            name = (await conv.get_response()).raw_text
-        await conv.send_message(f'Thanks, {name}!')
-        # await conv.send_message('Thanks {}!'.format(name))
+        await conv.send_message('Напиши Фамилию')
+        lastname_ = (await conv.get_response()).raw_text
+        while not any(l.isalpha() for l in lastname_.strip(' ')):
+            await conv.send_message("Фамилия должно содержать только буквы. Попробуй еще раз!")
+            lastname_ = (await conv.get_response()).raw_text
+        # запись в бд фамилии 
+
+        await conv.send_message('Теперь напиши Имя')
+        firstname_ = (await conv.get_response()).raw_text
+        while not any(n.isalpha() for n in firstname_.strip(' ')):
+            await conv.send_message(f"Имя должно содеражать только буквы. Попробуй еще раз!") 
+            firstname_ = await (conv.get_response()).raw_text
+        #запись в бд имени 
+        
+        await conv.send_message(f'Напиши дату рождения в виде "17.11.1995"')
+        date = (await conv.get_response()).raw_text
+        #запись в бд
+        sender = await event.get_sender()
+
+        #user = conv.sender.first_name #conv._incoming.2.
+        await conv.send_message(f'{sender.first_name}, ваши данные были успешно добавлены!')
+      
 
 def main():
     """Start the bot."""
