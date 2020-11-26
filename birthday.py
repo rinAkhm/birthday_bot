@@ -1,24 +1,25 @@
 import asyncio
 import os
 from telethon import TelegramClient, events
+from telethon import utils 
+from telethon import sync
 
 
-
-api_id = int(os.getenv('API_ID'))
+api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
-bot_token = os.getenv('BOT_TOKEN')
+token = os.getenv('BOT_TOKEN')
 
 
 
-bot = TelegramClient('session', api_id, api_hash).start(bot_token = bot_token)
+bot = TelegramClient('session', 2451630, 'b66dee9617bb120c360cf425be242617').start(bot_token='869898595:AAFHVn9B6zA1VCxKj1T8psT0Snns8K7lZAY')
 
-@bot.on(events.NewMessage(pattern='/start'))
+
+@bot.on(events.NewMessage())
 async def send_welcome(event):
-    #me = bot.get_entity('me')
-    # print(utils.get_display_name(me))
-    await event.reply('Howdy, how are you doing?')
-    with bot.conversation(event) as conv:
-        conv.send_message('Hi!')
+    me = bot.get_entity('me') #384511665
+    print(utils.get_display_name(me))
+    with event.conversation(chat_id) as conv:
+        bot.send_message('Hi!')
         hello = conv.get_response()
 
         conv.send_message('Please tell me your name')
@@ -27,8 +28,11 @@ async def send_welcome(event):
             conv.send_message("Your name didn't have any letters! Try again")
             name = conv.get_response().raw_text
 
-    conv.send_message('Thanks {}!'.format(name))
-
+        conv.send_message('Thanks {}!'.format(name))
+# me= bot.get_entity('me')
+# print(utils.get_display_name(me))
+# msg = 'hello'
+# bot.send_message(msg, me)
 
 
 # @bot.on(events.NewMessage)
