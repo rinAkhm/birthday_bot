@@ -1,7 +1,7 @@
 
 import datetime
 
-def select_from_mysql(mysql):
+def convert_from_mysql(mysql):
     #mysql = [(1, None, 'Ахметзянов', 'Рушан', datetime.date(2002, 9, 5)), (2, None, 'Ахметзянов', 'ати', datetime.date(1964, 9, 20))]
     """ Функция приобразует данные из в строковый формат"""
     edited_line = ''
