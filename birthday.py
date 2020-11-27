@@ -1,8 +1,7 @@
 import asyncio
 import os
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, Button
 from telethon import utils
-from telethon.tl.custom import Button
 from dotenv import load_dotenv
  
 load_dotenv()
@@ -11,6 +10,7 @@ API_HASH = os.getenv('API_HASH')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
+
 
 @bot.on(events.NewMessage(pattern='/help'))
 async def send_welcome(message):
@@ -50,32 +50,22 @@ async def registred_data(event):
         await conv.send_message(f'{sender.first_name}, ваши данные были успешно добавлены!')
 
 
-@client.on(events.CallbackQuery)
-async def callback(event):
-    await event.edit('Thank you for clicking {}!'.format(event.data))
-
-client.send_message(chat, 'A single button, with "clk1" as data',
-                    buttons=Button.inline('Click me', b'clk1'))
-
-client.send_message(chat, 'Pick one from this grid', buttons=[
-    [Button.inline('Left'), Button.inline('Right')],
-    [Button.url('Check this site!', 'https://lonamiwebs.github.io')]
-])
-      
+@bot.on(events.CallbackQuery(pattern='r'))
+async def handler(event):
+    if event.data == b'yes':
+        await event.answer('Correct answer!')
 
 def main():
     """Start the bot."""
     bot.run_until_disconnected()
+    await bot.send_message(user, 'Yes or no?', buttons=[
+        Button.inline('Yes!', b'yes'),
+        Button.inline('Nope', b'no')
+    ])
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
+    
 
 
 
