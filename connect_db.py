@@ -4,18 +4,13 @@ import os
 
 load_dotenv()
 
-def connection_db(db="save"):
+def connection_db():
     """ This fuction need for connect db server"""
-    if db!=None:
-        mydb = mysql.connector.connect(
+    mydb = mysql.connector.connect(
             host=os.getenv('host'),
             user=os.getenv('user'),
             password=os.getenv('password'),
-            port=('port'),
-            database=('database')
+            port=os.getenv('port'),
+            database=os.getenv('database')
             )
-        mycursor = mydb.cursor()
-        return mycursor
-    else:
-        mydb.commit()
-        return "Successful change"
+    return mydb
