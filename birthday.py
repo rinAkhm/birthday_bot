@@ -21,6 +21,7 @@ mycursor = mydb.cursor()
 
 
 @bot.on(events.NewMessage(pattern='/help'))
+    """ This function can send discription information"""
 async def send_welcome(message):
     user = message.chat.first_name
     me = (await bot.get_me()).first_name
@@ -32,6 +33,7 @@ async def send_welcome(message):
 
 
 @bot.on(events.NewMessage(pattern='/add'))
+    """This function can add new person to list"""
 async def add_data(event):
     async with bot.conversation(event.chat_id) as conv:
         await conv.send_message('Давай начнем. Как его ли её зовут?')
@@ -64,6 +66,7 @@ async def add_data(event):
       
 @bot.on(events.NewMessage(pattern='/list'))
 async def show_list(list):
+    """This fuction can send message with all your persons"""
     sender = (list.input_chat.user_id,)
     sql = "SELECT firstname, lastname, date FROM birthday WHERE id_user = %s"
     mycursor.execute(sql, sender)
@@ -75,6 +78,7 @@ async def show_list(list):
 
 @bot.on(events.NewMessage(pattern='/d'))
 async def delete_line(event):
+    """This function can delete row with information about person from list """
     async with bot.conversation(event.chat_id) as rows:
         #sbdfnbds
         await rows.send_message(f'Отправь фамилию человека, которого Вы хотите удалить')
