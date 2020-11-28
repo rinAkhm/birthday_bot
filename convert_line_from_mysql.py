@@ -1,9 +1,9 @@
 
 import datetime
 
-def convert_line(mysql):
+def convert_line_for_print(mysql):
     #mysql = [(1, None, 'Ахметзянов', 'Рушан', datetime.date(2002, 9, 5)), (2, None, 'Ахметзянов', 'ати', datetime.date(1964, 9, 20))]
-    """ Функция приобразует данные из в строковый формат"""
+    """ Fuction return edited message"""
     edited_line = ''
     count = 0
     for i in mysql:
@@ -17,5 +17,15 @@ def convert_line(mysql):
             else:
                 edited_line = edited_line +'{0} '.format(str(i[j])) 
     return edited_line
-# mysql = [('Ахметзянов', 'Рушан', datetime.date(2002, 9, 5)), ('Ахметзянов', 'ати', datetime.date(1964, 9, 20))]
-# print(convert_line(mysql))
+
+
+def convert_line_for_delete(mysql):
+    """ Fuction return edited message"""
+    edited_line = ''
+    for list_ in mysql:
+        for tuple_ in range (len(list_)):
+            if tuple_%2 == 0 and tuple_!=0:
+                edited_line = edited_line + '/ user ID = {0}\n'.format(list_[tuple_]) 
+            else:
+                edited_line = edited_line +'{0} '.format(list_[tuple_])
+    return edited_line
