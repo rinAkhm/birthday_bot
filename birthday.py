@@ -21,20 +21,21 @@ mycursor = mydb.cursor()
 
 
 @bot.on(events.NewMessage(pattern='/help'))
-    """ This function can send discription information"""
 async def send_welcome(message):
+    """ This function can send discription information"""
     user = message.chat.first_name
     me = (await bot.get_me()).first_name
     await message.reply(f'Привет, {user}! Я {me} бот. \nЯ умею запоминать дни рождения , которые ты мне пришлешь.'+ \
-     '\nОзнакомиться с функционалом  можно при помощи команды /help' + \
+     '\nДля того, чтобы удалить запись нужно использовать команду /delete' + \
+     '\nДля того, чтобы посмотреть спиосок всех записей нужно использовать команду /list' + \
      '\nДля того, чтобы добавить новую запись в список нужно написать команду /add и ответить на вопросы, которые пришлет бот.' + \
      '\nВ конце ты получишь сообщение, что запись успешно добавлена.') 
     raise events.StopPropagation
 
 
 @bot.on(events.NewMessage(pattern='/add'))
-    """This function can add new person to list"""
 async def add_data(event):
+    """This function can add new person to list"""
     async with bot.conversation(event.chat_id) as conv:
         await conv.send_message('Давай начнем. Как его ли её зовут?')
         firstname_ = (await conv.get_response()).raw_text
@@ -76,12 +77,11 @@ async def show_list(list):
     raise events.StopPropagation
 
 
-@bot.on(events.NewMessage(pattern='/d'))
+@bot.on(events.NewMessage(pattern='/delete'))
 async def delete_line(event):
     """This function can delete row with information about person from list """
     async with bot.conversation(event.chat_id) as rows:
-        #sbdfnbds
-        await rows.send_message(f'Отправь фамилию человека, которого Вы хотите удалить')
+        await rows.send_message(f'Ты решил удалить запись? Тогда тебе нужно ввести фамилию человека из списка')
         lastname_ = ((await rows.get_response()).raw_text,)
         sql = "SELECT firstname, lastname, ID FROM birthday WHERE lastname = %s"
         mycursor.execute(sql, lastname_)
@@ -93,6 +93,8 @@ async def delete_line(event):
             mydb.commit()
             await rows.send_message(f'Ваша запись успешно удалена!')
             raise events.StopPropagation
+        elif len(search_by_lastname)==0:
+            await rows.send_message(f'В списке нет такой фамилии')
         else:
             await rows.send_message('Вот что мне удалсь найти по данной фамилии из списка:\n{0}\n'.format(edited_text)+\
                                 '\nДля того, чтобы удалить нужного человека отправь его или её ID')
