@@ -4,7 +4,8 @@ from telethon import TelegramClient, events, Button
 from telethon import utils
 from dotenv import load_dotenv
 import datetime
-from convert_line_from_mysql import convert_line
+from convert_line_from_mysql import convert_line_for_print
+from convert_line_from_mysql import convert_line_for_delete
 from connect_db import connection_db
 import mysql.connector
 
@@ -17,21 +18,6 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 mydb = connection_db()
 mycursor = mydb.cursor()
-mycursor.execute("SHOW TABLES")
-for x in mycursor:
-  print(x)
-
-# sql = "INSERT INTO birthday (ID, firstname, lastname, date, id_user) VALUES (%s, %s, %s, %s, %s)"
-# val = (22, "John", "Highway", "17.11.2020", 50)
-# mycursor.execute(sql, val)
-# mydb.commit()
-#ID, firstname, lastname, date FROM 
-# sql = "SELECT  * FROM birthday  WHERE id_user = %s"
-# id = ('50',) 
-# mycursor.execute(sql, id)
-# result = mycursor.fetchall()
-
-# print(result)    
 
 
 @bot.on(events.NewMessage(pattern='/help'))
@@ -48,23 +34,23 @@ async def send_welcome(message):
 @bot.on(events.NewMessage(pattern='/add'))
 async def add_data(event):
     async with bot.conversation(event.chat_id) as conv:
-        await conv.send_message('Давай начнем. Какая фамилия у твоего друга?')
+        await conv.send_message('Давай начнем. Как его ли её зовут?')
+        firstname_ = (await conv.get_response()).raw_text
+        while not any(n.isalpha() for n in firstname_.strip(' ')):
+            await conv.send_message(f"Имя должно содеражать только буквы. Попробуй еще раз!") 
+            firstname_ = (await conv.get_response()).raw_text
+        
+        await conv.send_message('Какая у него или у неё фамилия?')
         lastname_ = (await conv.get_response()).raw_text
         while not any(l.isalpha() for l in lastname_.strip(' ')):
             await conv.send_message("Фамилия должно содержать только буквы. Попробуй еще раз!")
             lastname_ = (await conv.get_response()).raw_text
 
-        await conv.send_message('Как зовут его или её?')
-        firstname_ = (await conv.get_response()).raw_text
-        while not any(n.isalpha() for n in firstname_.strip(' ')):
-            await conv.send_message(f"Имя должно содеражать только буквы. Попробуй еще раз!") 
-            firstname_ = await (conv.get_response()).raw_text
-        
-        await conv.send_message(f'Напиши дату рождения в формате "YYYY.MM.DD"')
+        await conv.send_message(f'Теперь отправь дату рождения в формате "YYYY.MM.DD"')
         date = (await conv.get_response()).raw_text
-        while any(d.isalpha() for d in date.strip(' ')):
+        while  any(d.isalpha() for d in date.strip(' ')):
             await conv.send_message(f'Не верный формат, попробуй еще раз')
-            date = await (conv.get_response()).raw_text
+            date = (await conv.get_response()).raw_text
                         
         sender = await event.get_sender()
         user = conv.input_chat.user_id
@@ -81,24 +67,38 @@ async def show_list(list):
     sender = (list.input_chat.user_id,)
     sql = "SELECT firstname, lastname, date FROM birthday WHERE id_user = %s"
     mycursor.execute(sql, sender)
-    result = mycursor.fetchall()
-    line_for_message = convert_line(result)
-    await list.reply(f'Результат: \n{line_for_message}')
+    search_by_user_id = mycursor.fetchall()
+    edited_text = convert_line_for_print(search_by_user_id)
+    await list.reply(f'Результат: \n{edited_text}')
     raise events.StopPropagation
-    
 
 
-@bot.on(events.NewMessage(pattern='/delete'))
-async def delete_line(row):
-    await row.send_message(f'Введите номер строки, которую хотите удалить')
-    id_user = (await row.get_response()).raw_text
-    #user = row.chat.user_id
-    mycursor = connection_db()
-    sql = ('DELETE FROM birthday WHERE ID = %s')
-    mycursor.execute(sql,id_user)
-    mycursor = connection_db('save')
-    await row.reply(f'Запись успешно удалена!')
-    raise events.StopPropagation
+@bot.on(events.NewMessage(pattern='/d'))
+async def delete_line(event):
+    async with bot.conversation(event.chat_id) as rows:
+        #sbdfnbds
+        await rows.send_message(f'Отправь фамилию человека, которого Вы хотите удалить')
+        lastname_ = ((await rows.get_response()).raw_text,)
+        sql = "SELECT firstname, lastname, ID FROM birthday WHERE lastname = %s"
+        mycursor.execute(sql, lastname_)
+        search_by_lastname = mycursor.fetchall()
+        edited_text = convert_line_for_delete(search_by_lastname) 
+        if len(search_by_lastname)==1:
+            sql = "DELETE FROM birthday WHERE lastname = %s"
+            mycursor.execute(sql,lastname_)
+            mydb.commit()
+            await rows.send_message(f'Ваша запись успешно удалена!')
+            raise events.StopPropagation
+        else:
+            await rows.send_message('Вот что мне удалсь найти по данной фамилии из списка:\n{0}\n'.format(edited_text)+\
+                                '\nДля того, чтобы удалить нужного человека отправь его или её ID')
+            user_id = ((await rows.get_response()).raw_text,)
+            sql = "DELETE FROM birthday WHERE ID = %s"
+            mycursor.execute(sql, user_id)
+            mydb.commit()
+            await rows.send_message(f'Ваша запись успешно удалена!')
+            raise events.StopPropagation
+
 
 def main():
     """Start the bot."""
