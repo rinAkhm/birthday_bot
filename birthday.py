@@ -8,12 +8,22 @@ from convert_line_from_mysql import convert_line_for_print
 from convert_line_from_mysql import convert_line_for_delete
 from connect_db import connection_db
 import mysql.connector
+import requests
 
 
 load_dotenv()
+'""date for telegram"'
 API_ID = os.getenv('API_ID')
 API_HASH = os.getenv('API_HASH')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+"""date for connect backendless"""
+REAST_ID = os.getenv('REAST_ID')
+DATABASE = os.getenv('DATABASE')
+APLICATION_ID = os.getenv('APLICATION_ID')
+
+
+
 
 bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 mydb = connection_db()
@@ -57,10 +67,13 @@ async def add_data(event):
                         
         sender = await event.get_sender()
         user = conv.input_chat.user_id
-        sql = "INSERT INTO birthday (firstname, lastname, date, id_user) VALUES (%s, %s, %s, %s)"
-        val = (lastname_, firstname_, date, user)
-        mycursor.execute(sql, val)
-        mydb.commit()
+        url = f"https://api.backendless.com/{APLICATION_ID}/{REAST_ID}/data/{DATABASE}"
+        user_text ={
+            "firsname":f"{firstname_}",
+            "lastname":f"{lastname_}",
+            "date_birthday":f"{date}"
+            }
+        text_for_message = requests.post(url, json=user_text)
         await conv.send_message(f'{sender.first_name}, ваши данные были успешно добавлены!')
         raise events.StopPropagation
 
