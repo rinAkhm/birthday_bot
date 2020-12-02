@@ -1,21 +1,24 @@
 
 import datetime
+import json
 
-def convert_line_for_print(mysql):
-    #mysql = [(1, None, 'Ахметзянов', 'Рушан', datetime.date(2002, 9, 5)), (2, None, 'Ахметзянов', 'ати', datetime.date(1964, 9, 20))]
+def convert_line_for_print(text):
     """ Fuction return edited message"""
-    edited_line = ''
+    edited_line = '' 
+    #{'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}
     count = 0
-    for i in mysql:
-        count+=1
-        for j in range (len(i)):
-            if j%2 == 0 and j!=0:
-                date = str(i[j])
-                edited_line = edited_line + '{0}-{1}-{2}\n'.format((date[8:10]),(date[5:7]),(date[0:4]))
-            elif j%3==0:
-                edited_line = edited_line +'{0}. {1} '.format(count,str(i[j])) 
+    for i in text:
+        for j in range(len(i)):
+
+            count+=1
+            if i[j]%2 == 0 and i[j]!=0:
+                pass
+            #edited_line = edited_line + '{0}-{1}-{2}\n'.format((date[8:10]),(date[5:7]),(date[0:4]))
+            elif i[j]%3==0:
+                edited_line = edited_line + text.json()[j]['firstname']
             else:
-                edited_line = edited_line +'{0} '.format(str(i[j])) 
+                pass
+            #edited_line = edited_line +'{0} '.format(str(i[j])) 
     return edited_line
 
 
@@ -29,3 +32,10 @@ def convert_line_for_delete(mysql):
             else:
                 edited_line = edited_line +'{0} '.format(list_[tuple_])
     return edited_line
+
+
+if __name__ == "__main__":
+    text = {'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}
+
+
+    convert_line_for_print(text)
