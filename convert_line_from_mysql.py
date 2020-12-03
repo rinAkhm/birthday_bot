@@ -2,23 +2,15 @@
 import datetime
 import json
 
-def convert_line_for_print(text):
-    """ Fuction return edited message"""
+def convert_line_for_print(respone):
+    """ Fuction return /list with edited message"""
     edited_line = '' 
     #{'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}
     count = 0
-    for i in text:
-        for j in range(len(i)):
-
-            count+=1
-            if i[j]%2 == 0 and i[j]!=0:
-                pass
-            #edited_line = edited_line + '{0}-{1}-{2}\n'.format((date[8:10]),(date[5:7]),(date[0:4]))
-            elif i[j]%3==0:
-                edited_line = edited_line + text.json()[j]['firstname']
-            else:
-                pass
-            #edited_line = edited_line +'{0} '.format(str(i[j])) 
+    text = json.loads(respone.text)
+    for row in text:
+        count+=1
+        edited_line+= '{0}. {1} {2} {3}\n'.format(count,row['firstname'],row['lastname'], row['date_birthday'])
     return edited_line
 
 
@@ -35,7 +27,7 @@ def convert_line_for_delete(mysql):
 
 
 if __name__ == "__main__":
-    text = {'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}
+    text = [{'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}]
 
 
     convert_line_for_print(text)
