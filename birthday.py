@@ -7,7 +7,6 @@ import datetime
 from convert_line_from_mysql import convert_line_for_print
 #from convert_line_from_mysql import convert_line_for_delete
 #from connect_db import connection_db
-import mysql.connector
 import requests
 import json
 
@@ -27,8 +26,6 @@ APLICATION_ID = os.getenv('APLICATION_ID')
 
 
 bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
-#mydb = connection_db()
-#mycursor = mydb.cursor()
 
 
 @bot.on(events.NewMessage(pattern='/help'))
@@ -89,7 +86,11 @@ async def show_list(list):
     #sql = "SELECT firstname, lastname, date FROM birthday WHERE id_user = %s"
     #mycursor.execute(sql, sender)
     #search_by_user_id = mycursor.fetchall()
-    edited_text = convert_line_for_print(response)
+    #edited_text = convert_line_for_print(response)
+    edited_text = ''
+    for i in range(len(response)):
+        edited_text+=response.json()
+    print(edited_text)
     await list.reply(f'Результат: \n{edited_text}')
     raise events.StopPropagation
 
