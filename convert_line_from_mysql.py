@@ -16,21 +16,9 @@ def convert_line_for_print(respone):
     return edited_line
 
 
-def convert_line_for_delete(respone):
-    """ Fuction return IdObject for delete row"""
-    edited_line = ''
-    count = 0
-    text = json.loads(respone.text)
-    for row in text:
-        count+=1
-        edited_line+= '{0}\n'.format(row['objectId'])
-    return edited_line
-
-
 def choise_person(respone):
     """ Fuction return IdObject for delete row"""
     edited_line = ''
-    count = 0
     text = json.loads(respone.text)
     for row in text:
         edited_line+= 'ID= {0} - {1} {2}\n'.format(row['id'],row['firstname'],row['lastname'])
