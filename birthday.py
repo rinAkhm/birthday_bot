@@ -5,7 +5,6 @@ from telethon import utils
 from dotenv import load_dotenv
 import datetime
 from convert_line_from_mysql import *
-#from convert_line_from_mysql import convert_line_for_delete
 import requests
 import json
 
@@ -61,14 +60,18 @@ async def add_data(event):
                         
         sender = await event.get_sender()
         user = conv.input_chat.user_id
+        id_person = 0
+        id_person+=1
         url = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}/data/{DATABASE}"
         user_text ={
             "firstname":f"{firstname_}",
             "lastname":f"{lastname_}",
             "date_birthday":f"{date}",
-            "user_id":f"{user}"
+            "user_id":f"{user}",
+            "id":id_person
             }
         text_for_message = requests.post(url, json=user_text)
+        print (text_for_message.text)
         await conv.send_message(f'{sender.first_name}, Your data was added successfully!')
         raise events.StopPropagation
 
@@ -92,24 +95,24 @@ async def show_list(list):
 async def delete_line(event):
     """This function can delete row with information about person from list """
     async with bot.conversation(event.chat_id) as rows:
-        sender = event.input_chat.user_id
-        await rows.send_message(f'Are you want delete entries? You need Then you need to enter the last name of the person from the list')
+        await rows.send_message(f'Are you want delete entries? You need to enter the last name of the person from the list')
         lastname_ = (await rows.get_response()).raw_text
-        url = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}//data/{DATABASE}??where=lastname%3D'{lastname_}'"
+        url = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}/data/{DATABASE}?where=lastname%3D'{lastname_}'"
         response = requests.request('GET', url)
-        a = len(json.loads(response.text))
         edited_text = ''
         if len(json.loads(response.text))==1:
-            objectId = convert_line_for_delete(response)
-            url = f"{DOMAIN}/data/bulk/birthday?where=objectId%3D'{objectId}'"
-            await rows.send_message(f'Your record was successfully deleted')
+            url = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}/data/bulk/{DATABASE}?where=lastname%3D'{lastname_}'"
+            requests.delete(url)
+            await rows.send_message(f'Your record was successfully deleted!')
         elif len(json.loads(response.text))>1:
-            await rows.send_message(f'Not found this last name')
-        else:
             edited_text = choise_person(response)
             await rows.send_message(f'I found:\n{edited_text}')
-            user_id = (await rows.get_response()).raw_text
-        await rows.send_message(f'Ваша запись успешно удалена!')
+            id_person = (await rows.get_response()).raw_text
+            url = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}/data/bulk/{DATABASE}?where=id%3D{id_person}"
+            requests.delete(url)
+            await rows.send_message(f'Your record was successfully deleted!')
+        else:
+            await rows.send_message(f'Not found this last name')
         raise events.StopPropagation
 
 

@@ -1,6 +1,8 @@
 
-import datetime
+from datetime import datetime, timedelta
+import datetime as DT
 import json
+import time
 
 def convert_line_for_print(respone):
     """ Fuction return /list with edited message"""
@@ -31,13 +33,6 @@ def choise_person(respone):
     count = 0
     text = json.loads(respone.text)
     for row in text:
-        count+=1
-        edited_line+= 'ID={0} - {1} {2}\n'.format(count,row['firstname'],row['lastname'])
+        edited_line+= 'ID= {0} - {1} {2}\n'.format(row['id'],row['firstname'],row['lastname'])
     return edited_line
 
-
-if __name__ == "__main__":
-    text = [{'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}]
-
-
-    choise_person(text)
