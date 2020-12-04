@@ -1,42 +1,29 @@
 
-import datetime
+from datetime import datetime, timedelta
+import datetime as DT
 import json
+import time
 
-def convert_line_for_print(text):
-    """ Fuction return edited message"""
+def convert_line_for_print(respone):
+    """ Fuction return /list with edited message"""
     edited_line = '' 
-    #{'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}
     count = 0
-
-    # for i in range(len(text))
-    for line in range(len(text)):
-        word += text.json()[line]
-    print (word)
-            # if i[j]%2 == 0 and i[j]!=0:
-            #     pass
-            # #edited_line = edited_line + '{0}-{1}-{2}\n'.format((date[8:10]),(date[5:7]),(date[0:4]))
-            # if i%3==0:
-            #     edited_line = edited_line + [i]['firstname']
-            # else:
-            #     pass
-            # #edited_line = edited_line +'{0} '.format(str(i[j])) 
+    text = json.loads(respone.text)
+    for row in text:
+        count+=1
+        date = str(row['date_birthday'])[0:10] # берем срез 
+        temp_date = datetime.fromtimestamp(int(date)).strftime('%d-%m-%Y') #преобразуем в формат datetime
+        date_birthday = datetime.strptime(temp_date, '%d-%m-%Y')+ timedelta(days=1)
+        edited_line+= '\t{0}. \t{1} \t{2} - \t{3}\n'.format(count, row['firstname'],row['lastname'], 
+                    datetime.strftime(date_birthday, '%e %B %Y'))
     return edited_line
 
 
-# def convert_line_for_delete(mysql):
-#     """ Fuction return edited message"""
-#     edited_line = ''
-#     for list_ in mysql:
-#         for tuple_ in range (len(list_)):
-#             if tuple_%2 == 0 and tuple_!=0:
-#                 edited_line = edited_line + '/ user ID = {0}\n'.format(list_[tuple_]) 
-#             else:
-#                 edited_line = edited_line +'{0} '.format(list_[tuple_])
-#     return edited_line
+def choise_person(respone):
+    """ Fuction return IdObject for delete row"""
+    edited_line = ''
+    text = json.loads(respone.text)
+    for row in text:
+        edited_line+= 'ID= {0} - {1} {2}\n'.format(row['id'],row['firstname'],row['lastname'])
+    return edited_line
 
-
-if __name__ == "__main__":
-    text = [{'___class': 'birthday', 'date_birthday': '17.112020', 'firstname': 'hello', 'lastname': 'itsme'}]
-
-
-    convert_line_for_print(text)
