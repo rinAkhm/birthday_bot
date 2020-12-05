@@ -1,12 +1,14 @@
 import asyncio
 import os
-from telethon import TelegramClient, events, Button
+from telethon import TelegramClient, events, Button, sync
 from telethon import utils
 from dotenv import load_dotenv
 import datetime
-from convert_line_from_mysql import convert_line_for_print, choise_person
+from convert_line_from_mysql import convert_line_for_print, choise_person, reminder
 import requests
 import json
+import aiocron
+import logging
 
 
 load_dotenv()
@@ -29,9 +31,10 @@ async def send_welcome(message):
     user = message.chat.first_name
     me = (await bot.get_me()).first_name
     await message.reply(f'Привет, {user}! Я {me} бот. \nI can remember the birthdays'+ \
-     '\n/delete - command will delete entries' + \
-     '\n/list - command will show your entries'  + \
-     '\n/add - command will add new entries') 
+     '\n\t/delete - command will delete entries' + \
+     '\n\t/list - command will show your entries'  + \
+     '\n\t/add - command will add new entries' +\
+     '\n\t I can also remind you of your birthdays every day at 9:30'   ) 
     raise events.StopPropagation
 
 
@@ -51,7 +54,7 @@ async def add_data(event):
             await conv.send_message("last name need have only letters! Tru again")
             lastname_ = (await conv.get_response()).raw_text
 
-        await conv.send_message(f'Send your date of birth in the format <DD. MM. YYYY>')
+        await conv.send_message(f'Send your date of birth in the format <DD.MM.YYYY>')
         date = (await conv.get_response()).raw_text
         while  any(d.isalpha() for d in date.strip(' ')):
             await conv.send_message(f'Not correct format, let\'s you try agan')
@@ -70,7 +73,6 @@ async def add_data(event):
             "id":id_person
             }
         text_for_message = requests.post(url, json=user_text)
-        print (text_for_message.text)
         await conv.send_message(f'{sender.first_name}, Your data was added successfully!')
         raise events.StopPropagation
 
@@ -116,11 +118,30 @@ async def delete_line(event):
             await rows.send_message(f'Not found this last name')
         raise events.StopPropagation
 
+time = '30 9 * * *'
+@aiocron.crontab(time)
+async def attime():
+    logging.basicConfig(filename='file.log', level=logging.INFO, format="%(levelname)s %(asctime)s %(message)s")
+    users_bot = set()
+    url = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}/data/{DATABASE}?property=user_id"
+    response_user_id = requests.request('GET',url)
+    for user_id in json.loads(response_user_id.text):
+        users_bot.add(int(user_id['user_id']))
+    for user in users_bot:
+        sort_by_user = f"{DOMAIN}/{APLICATION_ID}/{REAST_ID}/data/{DATABASE}?where=user_id%3D'{user}'&property=date_birthday&property=firstname"
+        response_date = requests.request('GET',sort_by_user)
+        message = reminder(response_date)
+        if message!=None and len(message)!=0:
+            try:
+                entity = await bot.get_entity(user)
+                await bot.send_message(entity, message)
+            except Exception as e:
+                error = "{0} - user_id = {1}".format(e,user)
+                logging.error(error)
 
 def main():
     """Start the bot."""
     bot.run_until_disconnected()
-
 
 if __name__ == '__main__':
     main()
