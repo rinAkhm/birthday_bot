@@ -34,7 +34,7 @@ async def send_welcome(message):
      '\n\t/delete - command will delete entries' + \
      '\n\t/list - command will show your entries'  + \
      '\n\t/add - command will add new entries' +\
-     '\n\t I can also remind you of your birthdays every day at 9:30'   ) 
+     '\n\t bot use cron  and can remind you of your birthdays every day at 9:30'   ) 
     raise events.StopPropagation
 
 
